@@ -14,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -33,7 +32,7 @@ public class Downloader {
         fileTypes.put("text/plain", ".txt");
     }
 
-    public Flowable<String> download(URI url) {
+    public Flowable<String> download(URI url, Path basePath) {
 
         HttpRequest head = HttpRequest.newBuilder()
                                       .uri(url)
@@ -57,24 +56,24 @@ public class Downloader {
             e.printStackTrace();
         }
 
-        Path outputFile = Paths.get(String.format("D:/Workspace/IntelliJ/jdown/final%s", extension));
+        Path outputFile = basePath.resolve(String.format("final%s", extension));
 
-        long n = contentLength;
-        long part = contentLength / 10;
+        int partitions = Runtime.getRuntime().availableProcessors()*2;
+        long part = contentLength / partitions;
 
         List<Flowable<Path>> requests = new LinkedList<>();
 
-        for (long index = 0, num = 0; num <= n; num = num + part + 1, index++) {
+        for (long index = 0, num = 0; index<partitions; num = num + part + 1, index++) {
             String rangeHeader = String.format("bytes=%d-%d", num, num + part);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                                                  .uri(url)
                                                  .header("Range", rangeHeader)
                                                  .GET()
                                                  .build();
-            long completion = (index + 1) * 10;
+            long completion = (long) ((index+1) * 100.0 / partitions + 0.5);
 
             CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
-                    HttpResponse.BodyHandlers.ofFile(Paths.get(String.format("D:/Workspace/IntelliJ/jdown/part%d", index))));
+                    HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("part%d", index))));
 
             Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
                                                   .map(body -> {
@@ -89,7 +88,7 @@ public class Downloader {
 
 
         return Flowable.merge(requests)
-                       .subscribeOn(Schedulers.single())
+                       .subscribeOn(Schedulers.io())
                        .map(path -> this.merge(path, outputFile));
     }
 

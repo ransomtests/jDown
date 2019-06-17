@@ -20,7 +20,7 @@ public class CompletionTracker {
     }
 
     public static void incrementTracker(long percentage) {
-        CompletionTracker.percentage.accumulateAndGet(percentage, Long::sum);
+        CompletionTracker.percentage.set(percentage);
     }
 
     static int getTrackerValue() {

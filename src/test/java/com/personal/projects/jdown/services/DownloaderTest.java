@@ -1,5 +1,7 @@
 package com.personal.projects.jdown.services;
 
+import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -7,7 +9,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 public class DownloaderTest {
 
@@ -47,15 +51,40 @@ public class DownloaderTest {
     public void contentLengthTest() {
         long contentLength = 476070;
         long n = contentLength;
-        long part = contentLength / 10;
+        int partitions = Runtime.getRuntime().availableProcessors()*2;
+        long part = contentLength / partitions;
 
-        for (long index = 0, num = 0; num <= n; num = num + part + 1, index++) {
-            String range = String.format("bytes=%d-%d", num, num + part);
-            String fileName = String.format("D:/Workspace/IntelliJ/jdown/part%d", index);
+        for (long index = 0, num = 0; index<partitions; num = num + part + 1, index++) {
+            String rangeHeader = String.format("bytes=%d-%d", num, num + part);
+            long completion = (long) ((index+1) * 100.0 / partitions + 0.5);
 
-            System.out.println(String.format("Range: %s\nFileName: %s\nPart: %d", range, fileName, (index + 1) * 10));
+            System.out.println(String.format("Range: %s%nCompletion: %d%n",rangeHeader,completion));
 
         }
+
+
+        System.out.println(contentLength);
+    }
+
+    @Test
+    public void flowableSubscriptionTest() {
+        Flowable.interval(1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .map(res -> {
+                    System.out.println(Thread.currentThread().getName());
+                    return "hello";
+                })
+                .blockingSubscribe(res -> System.out.println(Thread.currentThread().getName()));
+
+    }
+
+    @Test
+    public void baseDirectoryTest() {
+        Path path = Paths.get("D:/Workspace/IntelliJ/jdown/downloads/");
+        path.resolve("final");
+
+        System.out.println(path.resolve("final"));
+
     }
 
 }

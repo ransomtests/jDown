@@ -19,17 +19,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 public class Downloader {
+    private final int partitions;
     private HttpClient httpClient;
     private Map<String, String> fileTypes;
+
 
     public Downloader(Map<String, String> fileTypes) {
         this.httpClient = HttpClient.newHttpClient();
         this.fileTypes = fileTypes;
+        this.partitions = Runtime.getRuntime()
+                                 .availableProcessors() * 2;
     }
 
-    public Flowable<String> download(URI url, Path basePath) {
+    public String download(URI url, Path basePath) {
 
         HttpRequest head = HttpRequest.newBuilder()
                                       .uri(url)
@@ -53,10 +58,7 @@ public class Downloader {
             e.printStackTrace();
         }
 
-        Path outputFile = basePath.resolve(String.format("final%s", extension));
 
-        int partitions = Runtime.getRuntime()
-                                .availableProcessors() * 2;
         long part = contentLength / partitions;
 
         List<Flowable<Path>> requests = new LinkedList<>();
@@ -74,6 +76,7 @@ public class Downloader {
                     HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("part%d", index))));
 
             Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
+                                                  .subscribeOn(Schedulers.io())
                                                   .map(body -> {
                                                       CompletionTracker.incrementTracker(completion);
                                                       return body;
@@ -84,19 +87,23 @@ public class Downloader {
 
         }
 
+        Flowable.merge(requests)
+                .blockingSubscribe(res -> {
+                }, error -> {
+                    error.printStackTrace();
+                    System.out.println(error.getMessage());
+                });
 
-        return Flowable.merge(requests)
-                       .subscribeOn(Schedulers.io())
-                       .map(path -> this.merge(path, outputFile));
+        return extension;
     }
 
 
-    private String merge(Path from, Path to) throws IOException {
-
+    private void merge(Path from, Path baseDirectory) throws IOException {
+        Path to = baseDirectory.resolve("final");
         try (SeekableByteChannel part = Files.newByteChannel(from)) {
             try (SeekableByteChannel output = Files.newByteChannel(to, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 
-                ByteBuffer buffer = ByteBuffer.allocate(2048);
+                ByteBuffer buffer = ByteBuffer.allocate(100 * 1024);
                 while (part.read(buffer) > 0) {
                     buffer.flip();
                     output.write(buffer);
@@ -106,8 +113,21 @@ public class Downloader {
                 Files.delete(from);
             }
         }
-
-        return "done";
     }
 
+    public void merge(Path baseDirectory, String extension) throws IOException {
+        IntStream.range(0, partitions)
+                 .mapToObj(index -> String.format("part%d", index))
+                 .map(baseDirectory::resolve)
+                 .forEach(path -> {
+                     try {
+                         this.merge(path, baseDirectory);
+                     } catch (IOException e) {
+                         e.printStackTrace();
+                     }
+                 });
+
+        Path finalFile = baseDirectory.resolve("final");
+        Files.move(finalFile, baseDirectory.resolve(String.format("final%s", extension)));
+    }
 }

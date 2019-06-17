@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Application {
@@ -25,12 +26,13 @@ public class Application {
             }
 
             long start = System.currentTimeMillis();
+
             CompletionTracker.start()
                              .subscribe();
 
-            downloader.download(url, Paths.get(basePath))
-                      .blockingSubscribe(res -> {
-                      }, System.out::println);
+            Path baseDirectory = Paths.get(basePath);
+            String extension = downloader.download(url, baseDirectory);
+            downloader.merge(baseDirectory, extension);
 
             System.out.println(String.format("%nDownload Time -> %d", System.currentTimeMillis() - start));
         } else {

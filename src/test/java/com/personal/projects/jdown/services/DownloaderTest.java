@@ -49,8 +49,7 @@ public class DownloaderTest {
 
     @Test
     public void contentLengthTest() {
-        long contentLength = 476070;
-        long n = contentLength;
+        long contentLength = 1000000002;
         int partitions = Runtime.getRuntime()
                                 .availableProcessors() * 2;
         long part = contentLength / partitions;

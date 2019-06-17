@@ -12,8 +12,7 @@ public class CompletionTracker {
     static String displayTracker() {
         String stage = String.format("downloaded %d", percentage.intValue());
         StringBuilder output = IntStream.range(0, stage.length())
-                                        .collect(StringBuilder::new, (builder, val) -> builder.append("\b"),
-                                                StringBuilder::append);
+                                        .collect(StringBuilder::new, (builder, val) -> builder.append("\b"), StringBuilder::append);
         output.append(stage);
         System.out.print(output);
         return "";
@@ -29,7 +28,7 @@ public class CompletionTracker {
 
     public static Flowable<String> start() {
 
-        return Flowable.interval(100, TimeUnit.MICROSECONDS)
+        return Flowable.interval(1, TimeUnit.SECONDS)
                        .map(res -> CompletionTracker.displayTracker())
                        .takeWhile(res -> percentage.intValue() < 100);
 

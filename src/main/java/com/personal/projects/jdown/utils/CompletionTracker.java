@@ -13,8 +13,8 @@ public class CompletionTracker {
         return "";
     }
 
-    public static int incrementTracker(int percentage) {
-        return CompletionTracker.percentage.accumulateAndGet(percentage, Integer::sum);
+    public static void incrementTracker(int percentage) {
+        CompletionTracker.percentage.accumulateAndGet(percentage, Integer::sum);
     }
 
     static int getTrackerValue() {

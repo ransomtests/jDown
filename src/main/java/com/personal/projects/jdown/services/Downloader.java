@@ -7,6 +7,7 @@ import io.reactivex.schedulers.Schedulers;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
@@ -15,37 +16,48 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class Downloader {
     private HttpClient httpClient;
+    private Map<String, String> fileTypes;
 
     public Downloader() {
         this.httpClient = HttpClient.newHttpClient();
+        fileTypes = new HashMap<>();
+        fileTypes.put("application/pdf", ".pdf");
+        fileTypes.put("text/plain", ".txt");
     }
 
     public Flowable<String> download(String url) {
-        Path finalPath = Paths.get("D:/Workspace/IntelliJ/jdown/final");
 
         HttpRequest head = HttpRequest.newBuilder()
                                       .uri(URI.create(url))
                                       .method("HEAD", HttpRequest.BodyPublishers.noBody())
                                       .build();
         long contentLength = 0L;
+        String extension = "";
 
         try {
-            contentLength = httpClient.sendAsync(head, HttpResponse.BodyHandlers.ofString())
-                                      .thenApply(HttpResponse::headers)
-                                      .thenApply(headers -> headers.firstValue("content-length")
-                                                                   .orElse("0"))
-                                      .thenApply(Long::parseLong)
-                                      .get();
-        } catch (InterruptedException | ExecutionException e) {
+            HttpResponse<String> response = httpClient.send(head, HttpResponse.BodyHandlers.ofString());
+            HttpHeaders headers = response.headers();
+            contentLength = headers
+                    .firstValue("content-length")
+                    .map(Long::parseLong)
+                    .orElse(0L);
+
+            extension = headers.firstValue("content-type")
+                               .map(res -> fileTypes.getOrDefault(res, ""))
+                               .orElse("");
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
+
+        Path outputFile = Paths.get(String.format("D:/Workspace/IntelliJ/jdown/final%s", extension));
 
         long n = contentLength;
         long part = contentLength / 10;
@@ -78,7 +90,7 @@ public class Downloader {
 
         return Flowable.merge(requests)
                        .subscribeOn(Schedulers.single())
-                       .map(path -> this.merge(path, finalPath));
+                       .map(path -> this.merge(path, outputFile));
     }
 
 

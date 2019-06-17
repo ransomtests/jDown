@@ -15,7 +15,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +24,9 @@ public class Downloader {
     private HttpClient httpClient;
     private Map<String, String> fileTypes;
 
-    public Downloader() {
+    public Downloader(Map<String, String> fileTypes) {
         this.httpClient = HttpClient.newHttpClient();
-        fileTypes = new HashMap<>();
-        fileTypes.put("application/pdf", ".pdf");
-        fileTypes.put("text/plain", ".txt");
+        this.fileTypes = fileTypes;
     }
 
     public Flowable<String> download(URI url, Path basePath) {

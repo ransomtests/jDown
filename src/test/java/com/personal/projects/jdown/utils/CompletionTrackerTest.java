@@ -12,7 +12,7 @@ public class CompletionTrackerTest {
         Flowable.interval(1, TimeUnit.SECONDS)
                 .map(res -> CompletionTracker.displayTracker())
                 .map(res -> {
-                    CompletionTracker.incrementTracker(50);
+                    CompletionTracker.incrementTracker(10);
                     return res;
                 })
                 .takeWhile(res -> CompletionTracker.getTrackerValue() < 100)

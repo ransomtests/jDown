@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CompletionTracker {
     private static AtomicInteger percentage = new AtomicInteger(0);
 
-    static Void displayTracker() {
-        System.out.println("tracker");
-        return Void.TYPE.cast("");
+    static String displayTracker() {
+        System.out.print("tracker");
+        return "";
     }
 
     public static int incrementTracker(int percentage) {
@@ -21,7 +21,7 @@ public class CompletionTracker {
         return percentage.intValue();
     }
 
-    public static Flowable<Void> start() {
+    public static Flowable<String> start() {
 
         return Flowable.interval(1, TimeUnit.MILLISECONDS)
                        .map(res -> CompletionTracker.displayTracker())

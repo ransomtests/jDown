@@ -96,20 +96,17 @@ public class Downloader {
 
     private String merge(Path from, Path to) throws IOException {
 
-        try (SeekableByteChannel part0 = Files.newByteChannel(from)) {
+        try (SeekableByteChannel part = Files.newByteChannel(from)) {
             try (SeekableByteChannel output = Files.newByteChannel(to, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 
                 ByteBuffer buffer = ByteBuffer.allocate(2048);
-                while (part0.read(buffer) > 0) {
+                while (part.read(buffer) > 0) {
                     buffer.flip();
                     output.write(buffer);
                     buffer.clear();
                 }
-
-                part0.close();
-                buffer = buffer.clear();
-
                 buffer.clear();
+                Files.delete(from);
             }
         }
 

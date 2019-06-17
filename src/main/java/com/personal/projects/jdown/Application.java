@@ -5,7 +5,7 @@ import com.personal.projects.jdown.utils.CompletionTracker;
 
 public class Application {
     public static void main(String[] args) {
-        String url = "https://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt";
+        String url = "http://www.osborne.cc/subs/Sub%20Questionnaire.pdf";
         Downloader downloader = new Downloader();
         long start = System.currentTimeMillis();
 
@@ -13,8 +13,9 @@ public class Application {
                          .subscribe();
 
         downloader.download(url)
-                  .blockingSubscribe(System.out::println);
+                  .blockingSubscribe(success -> {
+                  }, System.out::println);
 
-        System.out.println(String.format("Execution Time -> %d", System.currentTimeMillis() - start));
+        System.out.println(String.format("%nExecution Time -> %d", System.currentTimeMillis() - start));
     }
 }

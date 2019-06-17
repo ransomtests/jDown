@@ -43,4 +43,20 @@ public class DownloaderTest {
 
     }
 
+    @Test
+    public void contentLengthTest() {
+        long contentLength = 476070;
+        long n = contentLength;
+        long part = contentLength / 10;
+
+        for (long index = 0, num = 0; num <= n; num = num + part + 1, index++) {
+            String range = String.format("bytes=%d-%d", num, num + part);
+            String fileName = String.format("D:/Workspace/IntelliJ/jdown/part%d", index);
+
+            System.out.println(String.format("Range: %s\nFileName: %s\nPart: %d", range, fileName, (index + 1) * 10));
+            index++;
+
+        }
+    }
+
 }

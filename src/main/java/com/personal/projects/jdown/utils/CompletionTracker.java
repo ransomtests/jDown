@@ -3,11 +3,11 @@ package com.personal.projects.jdown.utils;
 import io.reactivex.Flowable;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 public class CompletionTracker {
-    private static AtomicInteger percentage = new AtomicInteger(0);
+    private static AtomicLong percentage = new AtomicLong(0);
 
     static String displayTracker() {
         String stage = String.format("downloaded %d", percentage.intValue());
@@ -16,12 +16,11 @@ public class CompletionTracker {
                                                 StringBuilder::append);
         output.append(stage);
         System.out.print(output);
-//        System.out.println(String.format("downloaded %d", percentage.intValue()));
         return "";
     }
 
-    public static void incrementTracker(int percentage) {
-        CompletionTracker.percentage.accumulateAndGet(percentage, Integer::sum);
+    public static void incrementTracker(long percentage) {
+        CompletionTracker.percentage.accumulateAndGet(percentage, Long::sum);
     }
 
     static int getTrackerValue() {
@@ -30,7 +29,7 @@ public class CompletionTracker {
 
     public static Flowable<String> start() {
 
-        return Flowable.interval(100, TimeUnit.MILLISECONDS)
+        return Flowable.interval(100, TimeUnit.MICROSECONDS)
                        .map(res -> CompletionTracker.displayTracker())
                        .takeWhile(res -> percentage.intValue() < 100);
 

@@ -55,19 +55,20 @@ public class Downloader {
 
         Path outputFile = basePath.resolve(String.format("final%s", extension));
 
-        int partitions = Runtime.getRuntime().availableProcessors()*2;
+        int partitions = Runtime.getRuntime()
+                                .availableProcessors() * 2;
         long part = contentLength / partitions;
 
         List<Flowable<Path>> requests = new LinkedList<>();
 
-        for (long index = 0, num = 0; index<partitions; num = num + part + 1, index++) {
+        for (long index = 0, num = 0; index < partitions; num = num + part + 1, index++) {
             String rangeHeader = String.format("bytes=%d-%d", num, num + part);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                                                  .uri(url)
                                                  .header("Range", rangeHeader)
                                                  .GET()
                                                  .build();
-            long completion = (long) ((index+1) * 100.0 / partitions + 0.5);
+            long completion = (long) ((index + 1) * 100.0 / partitions + 0.5);
 
             CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
                     HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("part%d", index))));

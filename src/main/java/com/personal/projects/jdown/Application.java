@@ -19,17 +19,22 @@ public class Application {
                                                              .getParsedConfig("config/file-extensions.txt", ":"));
             String basePath;
             System.out.println("Enter base path for download");
+
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
                 basePath = reader.readLine();
             }
+
             long start = System.currentTimeMillis();
             CompletionTracker.start()
                              .subscribe();
 
             downloader.download(url, Paths.get(basePath))
-                      .blockingSubscribe(res ->{}, System.out::println);
+                      .blockingSubscribe(res -> {
+                      }, System.out::println);
 
             System.out.println(String.format("%nDownload Time -> %d", System.currentTimeMillis() - start));
+        } else {
+            System.out.println("Could not download");
         }
     }
 }

@@ -51,14 +51,15 @@ public class DownloaderTest {
     public void contentLengthTest() {
         long contentLength = 476070;
         long n = contentLength;
-        int partitions = Runtime.getRuntime().availableProcessors()*2;
+        int partitions = Runtime.getRuntime()
+                                .availableProcessors() * 2;
         long part = contentLength / partitions;
 
-        for (long index = 0, num = 0; index<partitions; num = num + part + 1, index++) {
+        for (long index = 0, num = 0; index < partitions; num = num + part + 1, index++) {
             String rangeHeader = String.format("bytes=%d-%d", num, num + part);
-            long completion = (long) ((index+1) * 100.0 / partitions + 0.5);
+            long completion = (long) ((index + 1) * 100.0 / partitions + 0.5);
 
-            System.out.println(String.format("Range: %s%nCompletion: %d%n",rangeHeader,completion));
+            System.out.println(String.format("Range: %s%nCompletion: %d%n", rangeHeader, completion));
 
         }
 
@@ -71,10 +72,12 @@ public class DownloaderTest {
         Flowable.interval(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .map(res -> {
-                    System.out.println(Thread.currentThread().getName());
+                    System.out.println(Thread.currentThread()
+                                             .getName());
                     return "hello";
                 })
-                .blockingSubscribe(res -> System.out.println(Thread.currentThread().getName()));
+                .blockingSubscribe(res -> System.out.println(Thread.currentThread()
+                                                                   .getName()));
 
     }
 

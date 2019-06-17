@@ -9,16 +9,16 @@ public class CompletionTrackerTest {
     @Test
     public void testTracker() throws InterruptedException {
 
-        Flowable.interval(1, TimeUnit.SECONDS)
+        Flowable.interval(100, TimeUnit.MILLISECONDS)
                 .map(res -> CompletionTracker.displayTracker())
                 .map(res -> {
-                    CompletionTracker.incrementTracker(10);
+                    CompletionTracker.incrementTracker(1);
                     return res;
                 })
-                .takeWhile(res -> CompletionTracker.getTrackerValue() < 100)
+                .takeWhile(res -> CompletionTracker.getTrackerValue() < 110)
                 .subscribe(System.out::println);
 
-        Thread.sleep(10000);
+        Thread.sleep(20000);
 
     }
 }

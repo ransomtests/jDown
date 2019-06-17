@@ -27,12 +27,12 @@ public class Downloader {
 
         HttpRequest downloadRequest = HttpRequest.newBuilder()
                                                  .uri(URI.create(url))
-                                                 .header("Range", "bytes=0-500")
+                                                 .header("Range", "bytes=0-10000")
                                                  .GET()
                                                  .build();
         HttpRequest downloadRequest2 = HttpRequest.newBuilder()
                                                   .uri(URI.create(url))
-                                                  .header("Range", "bytes=501-1000")
+                                                  .header("Range", "bytes=10001-200000")
                                                   .GET()
                                                   .build();
 

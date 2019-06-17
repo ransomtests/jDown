@@ -19,6 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 public class Downloader {
@@ -31,7 +33,7 @@ public class Downloader {
         this.httpClient = HttpClient.newHttpClient();
         this.fileTypes = fileTypes;
         this.partitions = Runtime.getRuntime()
-                                 .availableProcessors() * 2;
+                                 .availableProcessors() / 2;
     }
 
     public String download(URI url, Path basePath) {
@@ -63,6 +65,7 @@ public class Downloader {
 
         List<Flowable<Path>> requests = new LinkedList<>();
 
+        ExecutorService executor = Executors.newFixedThreadPool(partitions);
         for (long index = 0, num = 0; index < partitions; num = num + part + 1, index++) {
             String rangeHeader = String.format("bytes=%d-%d", num, num + part);
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -76,7 +79,7 @@ public class Downloader {
                     HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("part%d", index))));
 
             Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
-                                                  .subscribeOn(Schedulers.io())
+                                                  .subscribeOn(Schedulers.from(executor))
                                                   .map(body -> {
                                                       CompletionTracker.incrementTracker(completion);
                                                       return body;
@@ -92,7 +95,7 @@ public class Downloader {
                 }, error -> {
                     error.printStackTrace();
                     System.out.println(error.getMessage());
-                });
+                }, executor::shutdown);
 
         return extension;
     }

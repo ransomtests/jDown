@@ -3,19 +3,24 @@ package com.personal.projects.jdown;
 import com.personal.projects.jdown.services.Downloader;
 import com.personal.projects.jdown.utils.CompletionTracker;
 
+import java.net.URI;
+
 public class Application {
     public static void main(String[] args) {
-        String url = "http://www.osborne.cc/subs/Sub%20Questionnaire.pdf";
-        Downloader downloader = new Downloader();
-        long start = System.currentTimeMillis();
+        if (args.length > 0) {
 
-        CompletionTracker.start()
-                         .subscribe();
+            URI url = URI.create(args[0]);
+            Downloader downloader = new Downloader();
+            long start = System.currentTimeMillis();
 
-        downloader.download(url)
-                  .blockingSubscribe(success -> {
-                  }, System.out::println);
+            CompletionTracker.start()
+                             .subscribe();
 
-        System.out.println(String.format("%nExecution Time -> %d", System.currentTimeMillis() - start));
+            downloader.download(url)
+                      .blockingSubscribe(success -> {
+                      }, System.out::println);
+
+            System.out.println(String.format("%nExecution Time -> %d", System.currentTimeMillis() - start));
+        }
     }
 }

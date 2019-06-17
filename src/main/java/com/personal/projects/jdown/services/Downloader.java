@@ -33,10 +33,10 @@ public class Downloader {
         fileTypes.put("text/plain", ".txt");
     }
 
-    public Flowable<String> download(String url) {
+    public Flowable<String> download(URI url) {
 
         HttpRequest head = HttpRequest.newBuilder()
-                                      .uri(URI.create(url))
+                                      .uri(url)
                                       .method("HEAD", HttpRequest.BodyPublishers.noBody())
                                       .build();
         long contentLength = 0L;
@@ -67,7 +67,7 @@ public class Downloader {
         for (long index = 0, num = 0; num <= n; num = num + part + 1, index++) {
             String rangeHeader = String.format("bytes=%d-%d", num, num + part);
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                                                 .uri(URI.create(url))
+                                                 .uri(url)
                                                  .header("Range", rangeHeader)
                                                  .GET()
                                                  .build();

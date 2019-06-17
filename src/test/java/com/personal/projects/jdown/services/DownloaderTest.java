@@ -54,7 +54,6 @@ public class DownloaderTest {
             String fileName = String.format("D:/Workspace/IntelliJ/jdown/part%d", index);
 
             System.out.println(String.format("Range: %s\nFileName: %s\nPart: %d", range, fileName, (index + 1) * 10));
-            index++;
 
         }
     }

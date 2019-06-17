@@ -1,5 +1,6 @@
 package com.personal.projects.jdown.services;
 
+import com.personal.projects.jdown.utils.CompletionTracker;
 import io.reactivex.Flowable;
 
 import java.net.URI;
@@ -26,12 +27,12 @@ public class Downloader {
 
         HttpRequest downloadRequest = HttpRequest.newBuilder()
                                                  .uri(URI.create(url))
-                                                 .header("Range", "bytes=0-200")
+                                                 .header("Range", "bytes=0-500")
                                                  .GET()
                                                  .build();
         HttpRequest downloadRequest2 = HttpRequest.newBuilder()
                                                   .uri(URI.create(url))
-                                                  .header("Range", "bytes=201-400")
+                                                  .header("Range", "bytes=501-1000")
                                                   .GET()
                                                   .build();
 
@@ -43,9 +44,17 @@ public class Downloader {
 
 
         Flowable<Path> res = Flowable.fromFuture(response)
+                                     .map(body -> {
+                                         CompletionTracker.incrementTracker(50);
+                                         return body;
+                                     })
                                      .map(HttpResponse::body);
 
         Flowable<Path> res2 = Flowable.fromFuture(response2)
+                                      .map(body -> {
+                                          CompletionTracker.incrementTracker(50);
+                                          return body;
+                                      })
                                       .map(HttpResponse::body);
 
 

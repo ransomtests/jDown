@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 public class Downloader {
-    private final int partitions;
+    private int availablePartitions;
     private HttpClient httpClient;
     private Map<String, String> fileTypes;
 
@@ -32,8 +32,9 @@ public class Downloader {
     public Downloader(Map<String, String> fileTypes) {
         this.httpClient = HttpClient.newHttpClient();
         this.fileTypes = fileTypes;
-        this.partitions = Runtime.getRuntime()
-                                 .availableProcessors() / 2;
+        int partitions = Runtime.getRuntime()
+                                .availableProcessors() / 2;
+        this.availablePartitions = partitions == 0 ? 1 : partitions;
     }
 
     public Map<String, Object> fileMeta(URI url) throws IOException, InterruptedException {
@@ -65,12 +66,12 @@ public class Downloader {
 
     public void download(URI url, Path basePath, long contentLength) {
 
-        long part = contentLength / partitions;
+        long part = contentLength / availablePartitions;
 
         List<Flowable<Path>> requests = new LinkedList<>();
 
-        ExecutorService executor = Executors.newFixedThreadPool(partitions);
-        for (long index = 0, num = 0; index < partitions; num = num + part + 1, index++) {
+        ExecutorService executor = Executors.newFixedThreadPool(availablePartitions);
+        for (long index = 0, num = 0; index < availablePartitions; num = num + part + 1, index++) {
             String rangeHeader = String.format("bytes=%d-%d", num, num + part);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                                                  .uri(url)
@@ -117,7 +118,7 @@ public class Downloader {
     }
 
     public void merge(Path baseDirectory, String extension, Path outputDirectory, String name) throws IOException {
-        IntStream.range(0, partitions)
+        IntStream.range(0, availablePartitions)
                  .mapToObj(index -> String.format("part%d", index))
                  .map(baseDirectory::resolve)
                  .forEach(path -> {

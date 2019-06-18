@@ -12,11 +12,7 @@ public class FileReader {
 
     public static FileReader getInstance() {
         if (reader == null) {
-            synchronized (FileReader.class) {
-                if (reader == null) {
-                    reader = new FileReader();
-                }
-            }
+            reader = new FileReader();
         }
         return reader;
     }

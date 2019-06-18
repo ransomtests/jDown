@@ -1,7 +1,7 @@
 package com.personal.projects.jdown;
 
+import com.personal.projects.jdown.services.CompletionTracker;
 import com.personal.projects.jdown.services.Downloader;
-import com.personal.projects.jdown.utils.CompletionTracker;
 import com.personal.projects.jdown.utils.FileReader;
 
 import java.io.BufferedReader;

@@ -1,6 +1,5 @@
 package com.personal.projects.jdown.services;
 
-import com.personal.projects.jdown.utils.CompletionTracker;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -15,6 +14,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,30 +36,34 @@ public class Downloader {
                                  .availableProcessors() / 2;
     }
 
-    public String download(URI url, Path basePath) {
-
+    public Map<String, Object> fileMeta(URI url) throws IOException, InterruptedException {
         HttpRequest head = HttpRequest.newBuilder()
                                       .uri(url)
                                       .method("HEAD", HttpRequest.BodyPublishers.noBody())
                                       .build();
-        long contentLength = 0L;
-        String extension = "";
 
-        try {
-            HttpResponse<String> response = httpClient.send(head, HttpResponse.BodyHandlers.ofString());
-            HttpHeaders headers = response.headers();
-            contentLength = headers
-                    .firstValue("content-length")
-                    .map(Long::parseLong)
-                    .orElse(0L);
+        HttpResponse<String> response = httpClient.send(head, HttpResponse.BodyHandlers.ofString());
+        HttpHeaders headers = response.headers();
+        long contentLength = headers
+                .firstValue("content-length")
+                .map(Long::parseLong)
+                .orElse(0L);
 
-            extension = headers.firstValue("content-type")
-                               .map(res -> fileTypes.getOrDefault(res, ""))
-                               .orElse("");
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
-        }
+        String extension = headers.firstValue("content-type")
+                                  .map(res -> fileTypes.getOrDefault(res, ""))
+                                  .orElse("");
 
+        HashMap<String, Object> fileMeta = new HashMap<>();
+
+        fileMeta.put("size", contentLength);
+        fileMeta.put("extension", extension);
+        fileMeta.put("name", "final");
+
+        return fileMeta;
+
+    }
+
+    public void download(URI url, Path basePath, long contentLength) {
 
         long part = contentLength / partitions;
 
@@ -73,17 +77,12 @@ public class Downloader {
                                                  .header("Range", rangeHeader)
                                                  .GET()
                                                  .build();
-            long completion = (long) ((index + 1) * 100.0 / partitions + 0.5);
 
             CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
                     HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("part%d", index))));
 
             Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
                                                   .subscribeOn(Schedulers.from(executor))
-                                                  .map(body -> {
-                                                      CompletionTracker.incrementTracker(completion);
-                                                      return body;
-                                                  })
                                                   .map(HttpResponse::body);
 
             requests.add(finalRequest);
@@ -97,7 +96,6 @@ public class Downloader {
                     System.out.println(error.getMessage());
                 }, executor::shutdown);
 
-        return extension;
     }
 
 

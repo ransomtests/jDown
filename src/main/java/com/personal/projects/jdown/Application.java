@@ -10,9 +10,10 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 public class Application {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length > 0) {
 
             URI url = URI.create(args[0]);
@@ -26,13 +27,16 @@ public class Application {
             }
 
             long start = System.currentTimeMillis();
-
-            CompletionTracker.start()
-                             .subscribe();
-
+            Map<String, Object> fileMeta = downloader.fileMeta(url);
+            Long size = (Long) fileMeta.get("size");
             Path baseDirectory = Paths.get(basePath);
-            String extension = downloader.download(url, baseDirectory);
-            downloader.merge(baseDirectory, extension);
+
+            CompletionTracker.start(size, baseDirectory)
+                             .subscribe(System.out::println, System.out::println);
+
+            downloader.download(url, baseDirectory, size);
+            System.out.println("Download complete. Merging!");
+            downloader.merge(baseDirectory, (String) fileMeta.get("extension"));
 
             System.out.println(String.format("%nDownload Time -> %d", System.currentTimeMillis() - start));
         } else {

@@ -30,7 +30,7 @@ public class MergeTest {
                  });
     }
 
-    private String merge(Path from, Path to) throws IOException {
+    private void merge(Path from, Path to) throws IOException {
         System.out.println(from);
         System.out.println(to);
         try (SeekableByteChannel part = Files.newByteChannel(from)) {
@@ -47,6 +47,5 @@ public class MergeTest {
             }
         }
 
-        return "done";
     }
 }

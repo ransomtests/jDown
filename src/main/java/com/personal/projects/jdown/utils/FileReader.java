@@ -17,7 +17,7 @@ public class FileReader {
         return reader;
     }
 
-    public BufferedReader getReader(String filePath) {
+    BufferedReader getReader(String filePath) {
         return new BufferedReader(new InputStreamReader(Objects.requireNonNull(this.getClass()
                                                                                    .getClassLoader()
                                                                                    .getResourceAsStream(filePath))));

@@ -1,5 +1,6 @@
 package com.personal.projects.jdown.utils;
 
+import com.personal.projects.jdown.models.DownloadMeta;
 import org.junit.Test;
 
 import java.io.File;
@@ -63,5 +64,18 @@ public class CompletionTrackerTest {
                                      .sum();
 
         System.out.println(bytesWritten);
+    }
+
+    @Test
+    public void timeLeft() {
+        DownloadMeta res = new DownloadMeta(2, 100);
+        long size = 300;
+        long percentageDownloaded = (long) ((res.getBytesDownloaded() * 100.0) / size + 0.5);
+        long timeLeft = (100 - percentageDownloaded) / percentageDownloaded * res.getTimeElapsed();
+
+        String downloaded = String.format("downloaded %d, elapsed %d, left %d", res.getBytesDownloaded(), res.getTimeElapsed(),
+                timeLeft);
+
+        System.out.println(downloaded);
     }
 }

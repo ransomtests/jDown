@@ -1,5 +1,6 @@
 package com.personal.projects.jdown.utils;
 
+import com.personal.projects.jdown.models.DownloadMeta;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -14,29 +15,20 @@ import java.util.stream.Stream;
 public class CompletionTracker {
     private static AtomicLong percentageCompletion = new AtomicLong(0);
 
-    private static String downloadStage() {
-        String stage = String.format("downloaded %d", percentageCompletion.intValue());
-//        StringBuilder output = IntStream.range(0, stage.length())
-//                                        .collect(StringBuilder::new, (builder, val) -> builder.append("\b"),
-//                                        StringBuilder::append);
-//        output.append(stage);
-//        return output.toString();
-        return stage;
-    }
-
-    private static long updateTracker(long res, long size) {
-        long percentageDownloaded = (long) ((res * 100.0) / size + 0.5);
+    private static String updateTracker(DownloadMeta res, long size) {
+        long percentageDownloaded = (long) ((res.getBytesDownloaded() * 100.0) / size + 0.5);
         percentageCompletion.set(percentageDownloaded);
-        return percentageCompletion.longValue();
+        double timeLeft = (100.00 - percentageDownloaded) / percentageDownloaded * res.getTimeElapsed();
+
+        return String.format("downloaded %d, elapsed %d, left %f", percentageDownloaded, res.getTimeElapsed(), timeLeft);
     }
 
     public static Flowable<String> start(long size, Path baseDirectory) {
 
         return Flowable.interval(1, TimeUnit.SECONDS)
-                       .subscribeOn(Schedulers.io())
-                       .map(res -> CompletionTracker.bytesDownloaded(baseDirectory))
-                       .map(res -> CompletionTracker.updateTracker(res, size))
-                       .map(res -> CompletionTracker.downloadStage())
+                       .subscribeOn(Schedulers.single())
+                       .map(timeElapsed -> new DownloadMeta(timeElapsed, CompletionTracker.bytesDownloaded(baseDirectory)))
+                       .map(downloadMeta -> CompletionTracker.updateTracker(downloadMeta, size))
                        .takeWhile(res -> percentageCompletion.intValue() < 100);
 
     }

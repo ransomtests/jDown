@@ -116,7 +116,7 @@ public class Downloader {
         }
     }
 
-    public void merge(Path baseDirectory, String extension) throws IOException {
+    public void merge(Path baseDirectory, String extension, Path outputDirectory, String name) throws IOException {
         IntStream.range(0, partitions)
                  .mapToObj(index -> String.format("part%d", index))
                  .map(baseDirectory::resolve)
@@ -129,6 +129,9 @@ public class Downloader {
                  });
 
         Path finalFile = baseDirectory.resolve("final");
-        Files.move(finalFile, baseDirectory.resolve(String.format("final%s", extension)));
+        outputDirectory.toFile()
+                       .mkdir();
+        String finalFileName = !"".equals(name) ? name : String.format("final%s", extension);
+        Files.move(finalFile, outputDirectory.resolve(finalFileName));
     }
 }

@@ -17,8 +17,10 @@ public class Application {
         if (args.length > 0) {
 
             URI url = URI.create(args[0]);
-            Downloader downloader = new Downloader(FileReader.getInstance()
-                                                             .getParsedConfig("config/file-extensions.txt", ":"));
+            FileReader fileReader = FileReader.getInstance();
+            Downloader downloader = new Downloader(fileReader
+                    .getParsedFileExtensions("config/file-extensions.txt", ":"));
+
             String basePath;
             System.out.println("Enter base path for download");
 
@@ -36,7 +38,9 @@ public class Application {
 
             downloader.download(url, baseDirectory, size);
             System.out.println("Download complete. Merging!");
-            downloader.merge(baseDirectory, (String) fileMeta.get("extension"));
+            String extension = (String) fileMeta.get("extension");
+            Path outputDirectory = fileReader.getFileDirectory("config/file-categorizations.txt", ":", baseDirectory, extension);
+            downloader.merge(baseDirectory, extension, outputDirectory, "");
 
             System.out.println(String.format("%nDownload Time -> %d", System.currentTimeMillis() - start));
         } else {

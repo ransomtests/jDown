@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.personal.projects</groupId>
-    <artifactId>jdown</artifactId>
+    <artifactId>jDown</artifactId>
     <version>1.0.0</version>
-    <name>Jdown</name>
+    <name>jDown</name>
 
     <dependencies>
         <dependency>
@@ -45,7 +45,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>jdown</finalName>
+                            <finalName>jDown</finalName>
                             <archive>
                                 <manifest>
                                     <mainClass>

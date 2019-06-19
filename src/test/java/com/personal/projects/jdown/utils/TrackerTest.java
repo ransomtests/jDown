@@ -1,7 +1,7 @@
 package com.personal.projects.jdown.utils;
 
-import com.personal.projects.jdown.models.Meta;
-import com.personal.projects.jdown.services.CompletionTracker;
+import com.personal.projects.jdown.models.DownloadStatus;
+import com.personal.projects.jdown.services.Tracker;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,13 +14,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.stream.IntStream;
 
-public class CompletionTrackerTest {
+public class TrackerTest {
 
     @Test
     public void testTracker() throws InterruptedException {
 
-        CompletionTracker.start(56L, Paths.get("D:/todelete"))
-                         .subscribe(System.out::println, System.out::println);
+        Tracker.start(56L, Paths.get("D:/todelete"))
+               .subscribe(System.out::println, System.out::println);
 
         Thread.sleep(20000);
     }
@@ -70,7 +70,7 @@ public class CompletionTrackerTest {
     @Test
     public void timeLeft() {
         long size = 300;
-        Meta res = new Meta(2, 100, size);
+        DownloadStatus res = new DownloadStatus(2, 100, size);
         double percentageDownloaded = ComputationUtils.computePercentageDownloaded(res);
         double timeLeft = ComputationUtils.computeTimeLeft(res);
 

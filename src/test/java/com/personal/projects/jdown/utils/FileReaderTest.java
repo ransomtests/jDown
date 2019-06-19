@@ -29,7 +29,7 @@ public class FileReaderTest {
     public void getFileDirectoryTest() throws IOException {
         Path baseDirectory = Paths.get("D:/Workspace/IntelliJ/jdown/downloads");
         Path outputDirectory = FileReader.getInstance()
-                                         .getFileDirectory("config/file-categorizations.txt", ":", baseDirectory, ".pdf");
+                                         .getFileDirectory("config/file-categorizations.txt", ":", baseDirectory, ".pdf", true);
         File directory = outputDirectory.toFile();
         directory.mkdir();
         Files.move(baseDirectory.resolve("file.pdf"), outputDirectory.resolve("file.pdf"));

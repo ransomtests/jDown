@@ -1,6 +1,6 @@
 package com.personal.projects.jdown.services;
 
-import com.personal.projects.jdown.models.Meta;
+import com.personal.projects.jdown.models.DownloadStatus;
 import com.personal.projects.jdown.utils.ComputationUtils;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -12,32 +12,31 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-public class CompletionTracker {
+public class Tracker {
 
-    private static Meta updateTracker(Meta meta) {
-        double percentageDownloaded = ComputationUtils.computePercentageDownloaded(meta);
-        double timeLeft = ComputationUtils.computeTimeLeft(meta);
-        String speed = ComputationUtils.computeDownloadSpeed(meta);
+    private static DownloadStatus updateTracker(DownloadStatus downloadStatus) {
+        double percentageDownloaded = ComputationUtils.computePercentageDownloaded(downloadStatus);
+        double timeLeft = ComputationUtils.computeTimeLeft(downloadStatus);
+        String speed = ComputationUtils.computeDownloadSpeed(downloadStatus);
 
         String downloadString = String.format("completion %f, elapsed %d, left %f , bytes %d, downloadSpeed %s",
                 percentageDownloaded,
-                meta.getTimeElapsed(),
-                timeLeft, meta.getBytesDownloaded(), speed);
+                downloadStatus.getTimeElapsed(),
+                timeLeft, downloadStatus.getBytesDownloaded(), speed);
 
-        meta.setDownloadString(downloadString);
+        downloadStatus.setDownloadString(downloadString);
 
-        return meta;
+        return downloadStatus;
     }
 
     public static Flowable<String> start(long size, Path baseDirectory) {
 
         return Flowable.interval(1, TimeUnit.SECONDS)
                        .subscribeOn(Schedulers.single())
-                       .map(timeElapsed -> new Meta(timeElapsed, CompletionTracker.bytesDownloaded(baseDirectory), size))
-                       .map(CompletionTracker::updateTracker)
-                       .takeWhile(meta -> meta.getPercentageDownloaded() <= 100)
-                       .map(Meta::getDownloadString);
-
+                       .map(timeElapsed -> new DownloadStatus(timeElapsed, Tracker.bytesDownloaded(baseDirectory), size))
+                       .map(Tracker::updateTracker)
+                       .takeWhile(downloadStatus -> downloadStatus.getPercentageDownloaded() <= 100)
+                       .map(DownloadStatus::getDownloadString);
 
     }
 

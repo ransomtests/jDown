@@ -32,12 +32,13 @@ public class FileReader {
 
     }
 
-    public Path getFileDirectory(String filePath, String separator, Path baseDirectory, String extension) {
+    public Path getFileDirectory(String filePath, String separator, Path baseDirectory, String extension, boolean move) {
 
         return this.getReader(filePath)
                    .lines()
                    .filter(line -> line.contains(extension))
                    .findFirst()
+                   .filter(path -> move)
                    .map(line -> line.split(separator)[0])
                    .map(baseDirectory::resolve)
                    .orElse(baseDirectory);

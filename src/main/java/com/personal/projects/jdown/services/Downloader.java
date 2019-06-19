@@ -27,12 +27,12 @@ import java.util.stream.IntStream;
 public class Downloader {
     private int availablePartitions;
     private HttpClient httpClient;
-    private Map<String, String> fileTypes;
+    private Map<String, String> parsedFileExtensions;
 
 
-    public Downloader(Map<String, String> fileTypes) {
+    public Downloader(Map<String, String> parsedFileExtensions) {
         this.httpClient = HttpClient.newHttpClient();
-        this.fileTypes = fileTypes;
+        this.parsedFileExtensions = parsedFileExtensions;
         int partitions = Runtime.getRuntime()
                                 .availableProcessors() / 2;
         this.availablePartitions = partitions == 0 ? 1 : partitions;
@@ -46,7 +46,7 @@ public class Downloader {
         HttpResponse<String> response = httpClient.send(head, HttpResponse.BodyHandlers.ofString());
         HttpHeaders headers = response.headers();
         HashMap<String, Object> info = new HashMap<>();
-        DownloadUtils.populateFileInfo(headers, url, fileTypes, info);
+        DownloadUtils.populateFileInfo(headers, url, parsedFileExtensions, info);
         return info;
 
     }
@@ -56,8 +56,6 @@ public class Downloader {
         long part = contentLength / availablePartitions;
 
         List<Flowable<Path>> requests = new LinkedList<>();
-        basePath.toFile()
-                .mkdir();
 
         ExecutorService executor = Executors.newFixedThreadPool(availablePartitions);
         for (long index = 0, num = 0; index < availablePartitions; num = num + part + 1, index++) {
@@ -89,8 +87,7 @@ public class Downloader {
     }
 
 
-    private void merge(Path from, Path baseDirectory) throws IOException {
-        Path to = baseDirectory.resolve("final");
+    private void merge(Path from, Path to) throws IOException {
         try (SeekableByteChannel part = Files.newByteChannel(from)) {
             try (SeekableByteChannel output = Files.newByteChannel(to, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 
@@ -106,21 +103,19 @@ public class Downloader {
         }
     }
 
-    public void merge(Path baseDirectory, Path outputDirectory, String name) throws IOException {
+    public Path merge(Path baseDirectory, Path outputDirectory, String name) throws IOException {
+        Path finalFile = baseDirectory.resolve(name);
         IntStream.range(0, availablePartitions)
                  .mapToObj(index -> String.format("part%d", index))
                  .map(baseDirectory::resolve)
                  .forEach(path -> {
                      try {
-                         this.merge(path, baseDirectory);
+                         this.merge(path, finalFile);
                      } catch (IOException e) {
                          e.printStackTrace();
                      }
                  });
 
-        Path finalFile = baseDirectory.resolve("final");
-        outputDirectory.toFile()
-                       .mkdir();
-        Files.move(finalFile, outputDirectory.resolve(name));
+        return Files.move(finalFile, outputDirectory.resolve(name));
     }
 }

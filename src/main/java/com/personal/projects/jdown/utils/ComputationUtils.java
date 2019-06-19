@@ -4,6 +4,7 @@ import com.personal.projects.jdown.models.DownloadStatus;
 
 public class ComputationUtils {
 
+    public static final int HUNDRED_KB = 100 * 1024;
     private static final double ONE_MB = 1024.0 * 1024;
 
     public static String computeDownloadSpeed(DownloadStatus downloadStatus) {

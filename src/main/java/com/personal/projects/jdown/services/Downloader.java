@@ -1,5 +1,6 @@
 package com.personal.projects.jdown.services;
 
+import com.personal.projects.jdown.utils.ComputationUtils;
 import com.personal.projects.jdown.utils.DownloadUtils;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -91,7 +92,7 @@ public class Downloader {
         try (SeekableByteChannel part = Files.newByteChannel(from)) {
             try (SeekableByteChannel output = Files.newByteChannel(to, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 
-                ByteBuffer buffer = ByteBuffer.allocate(100 * 1024);
+                ByteBuffer buffer = ByteBuffer.allocate(ComputationUtils.HUNDRED_KB);
                 while (part.read(buffer) > 0) {
                     buffer.flip();
                     output.write(buffer);

@@ -1,5 +1,6 @@
 package com.personal.projects.jdown.services;
 
+import com.personal.projects.jdown.utils.DownloadUtils;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -37,29 +38,16 @@ public class Downloader {
         this.availablePartitions = partitions == 0 ? 1 : partitions;
     }
 
-    public Map<String, Object> fileMeta(URI url) throws IOException, InterruptedException {
+    public Map<String, Object> downloadInfo(URI url) throws IOException, InterruptedException {
         HttpRequest head = HttpRequest.newBuilder()
                                       .uri(url)
                                       .method("HEAD", HttpRequest.BodyPublishers.noBody())
                                       .build();
-
         HttpResponse<String> response = httpClient.send(head, HttpResponse.BodyHandlers.ofString());
         HttpHeaders headers = response.headers();
-        long contentLength = headers
-                .firstValueAsLong("content-length")
-                .orElse(0L);
-
-        String extension = headers.firstValue("content-type")
-                                  .map(res -> fileTypes.getOrDefault(res, ""))
-                                  .orElse("");
-
-        HashMap<String, Object> fileMeta = new HashMap<>();
-
-        fileMeta.put("size", contentLength);
-        fileMeta.put("extension", extension);
-        fileMeta.put("name", "final");
-
-        return fileMeta;
+        HashMap<String, Object> info = new HashMap<>();
+        DownloadUtils.populateFileInfo(headers, url, fileTypes, info);
+        return info;
 
     }
 
@@ -116,7 +104,7 @@ public class Downloader {
         }
     }
 
-    public void merge(Path baseDirectory, String extension, Path outputDirectory, String name) throws IOException {
+    public void merge(Path baseDirectory, Path outputDirectory, String name) throws IOException {
         IntStream.range(0, availablePartitions)
                  .mapToObj(index -> String.format("part%d", index))
                  .map(baseDirectory::resolve)
@@ -131,7 +119,6 @@ public class Downloader {
         Path finalFile = baseDirectory.resolve("final");
         outputDirectory.toFile()
                        .mkdir();
-        String finalFileName = !"".equals(name) ? name : String.format("final%s", extension);
-        Files.move(finalFile, outputDirectory.resolve(finalFileName));
+        Files.move(finalFile, outputDirectory.resolve(name));
     }
 }

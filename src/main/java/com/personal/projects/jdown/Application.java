@@ -29,7 +29,7 @@ public class Application {
             }
 
             long start = System.currentTimeMillis();
-            Map<String, Object> fileMeta = downloader.fileMeta(url);
+            Map<String, Object> fileMeta = downloader.downloadInfo(url);
             Long size = (Long) fileMeta.get("size");
             Path baseDirectory = Paths.get(basePath);
 
@@ -40,7 +40,8 @@ public class Application {
             System.out.println("Download complete. Merging!");
             String extension = (String) fileMeta.get("extension");
             Path outputDirectory = fileReader.getFileDirectory("config/file-categorizations.txt", ":", baseDirectory, extension);
-            downloader.merge(baseDirectory, extension, outputDirectory, "");
+            downloader.merge(baseDirectory, outputDirectory, fileMeta.get("name")
+                                                                     .toString());
 
             System.out.println(String.format("%nDownload Time -> %d", System.currentTimeMillis() - start));
         } else {

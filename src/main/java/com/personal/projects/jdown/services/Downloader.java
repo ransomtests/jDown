@@ -56,6 +56,8 @@ public class Downloader {
         long part = contentLength / availablePartitions;
 
         List<Flowable<Path>> requests = new LinkedList<>();
+        basePath.toFile()
+                .mkdir();
 
         ExecutorService executor = Executors.newFixedThreadPool(availablePartitions);
         for (long index = 0, num = 0; index < availablePartitions; num = num + part + 1, index++) {

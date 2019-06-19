@@ -46,8 +46,7 @@ public class Downloader {
         HttpResponse<String> response = httpClient.send(head, HttpResponse.BodyHandlers.ofString());
         HttpHeaders headers = response.headers();
         long contentLength = headers
-                .firstValue("content-length")
-                .map(Long::parseLong)
+                .firstValueAsLong("content-length")
                 .orElse(0L);
 
         String extension = headers.firstValue("content-type")

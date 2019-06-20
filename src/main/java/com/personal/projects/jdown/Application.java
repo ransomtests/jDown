@@ -39,12 +39,13 @@ public class Application {
 
 
         System.out.println("Download started");
-        Tracker.start(size, downloadDirectory)
+        String name = downloadInfo.get("name")
+                                  .toString();
+        Tracker.start(size, downloadDirectory, name)
                .subscribe(System.out::println, System.out::println);
-        downloader.download(uri, downloadDirectory, size);
+        downloader.download(uri, downloadDirectory, size, name);
         System.out.println("Download complete. Merging!");
-        Path targetFile = downloader.merge(downloadDirectory, outputDirectory, downloadInfo.get("name")
-                                                                                           .toString());
+        Path targetFile = downloader.merge(downloadDirectory, outputDirectory, name);
 
         System.out.println(String.format("%nDownload Time -> %d", System.currentTimeMillis() - start));
         System.out.println(String.format("File path -> %s", targetFile.toAbsolutePath()

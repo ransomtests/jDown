@@ -29,25 +29,25 @@ public class Tracker {
         return downloadStatus;
     }
 
-    public static Flowable<String> start(long size, Path baseDirectory) {
+    public static Flowable<String> start(long size, Path baseDirectory, String name) {
 
         return Flowable.interval(1, TimeUnit.SECONDS)
                        .subscribeOn(Schedulers.single())
-                       .map(timeElapsed -> new DownloadStatus(timeElapsed, Tracker.bytesDownloaded(baseDirectory), size))
+                       .map(timeElapsed -> new DownloadStatus(timeElapsed, Tracker.bytesDownloaded(baseDirectory, name), size))
                        .map(Tracker::updateTracker)
                        .takeWhile(downloadStatus -> downloadStatus.getPercentageDownloaded() <= 100)
                        .map(DownloadStatus::getDownloadString);
 
     }
 
-    private static long bytesDownloaded(Path baseDirectory) {
+    private static long bytesDownloaded(Path baseDirectory, String name) {
         try (Stream<Path> directoryWalker = Files.walk(baseDirectory)) {
 
             return directoryWalker
                     .map(Path::toFile)
                     .filter(File::isFile)
                     .filter(file -> file.getName()
-                                        .contains("part"))
+                                        .contains(name))
                     .mapToLong(File::length)
                     .sum();
 

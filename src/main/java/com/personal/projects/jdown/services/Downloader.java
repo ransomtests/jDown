@@ -52,7 +52,7 @@ public class Downloader {
 
     }
 
-    public void download(URI url, Path basePath, long contentLength) {
+    public void download(URI url, Path basePath, long contentLength, String name) {
 
         long part = contentLength / availablePartitions;
 
@@ -68,7 +68,7 @@ public class Downloader {
                                                  .build();
 
             CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
-                    HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("part%d", index))));
+                    HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("%s%d", name, index))));
 
             Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
                                                   .subscribeOn(Schedulers.from(executor))
@@ -107,7 +107,7 @@ public class Downloader {
     public Path merge(Path baseDirectory, Path outputDirectory, String name) throws IOException {
         Path finalFile = baseDirectory.resolve(name);
         IntStream.range(0, availablePartitions)
-                 .mapToObj(index -> String.format("part%d", index))
+                 .mapToObj(index -> String.format("%s%d", name, index))
                  .map(baseDirectory::resolve)
                  .forEach(path -> {
                      try {

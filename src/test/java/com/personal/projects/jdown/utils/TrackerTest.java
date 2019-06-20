@@ -19,7 +19,7 @@ public class TrackerTest {
     @Test
     public void testTracker() throws InterruptedException {
 
-        Tracker.start(56L, Paths.get("D:/todelete"))
+        Tracker.start(56L, Paths.get("D:/todelete"), "")
                .subscribe(System.out::println, System.out::println);
 
         Thread.sleep(20000);

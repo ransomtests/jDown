@@ -60,15 +60,23 @@ public class Downloader {
 
         ExecutorService executor = Executors.newFixedThreadPool(availablePartitions);
         for (long index = 0, num = 0; index < availablePartitions; num = num + part + 1, index++) {
-            String rangeHeader = String.format("bytes=%d-%d", num, num + part);
+            Path resolve = basePath.resolve(String.format("%s%d", name, index));
+            long alreadyDownloaded = resolve.toFile()
+                                            .length();
+            long start = num;
+            if (alreadyDownloaded > 0) {
+                start = alreadyDownloaded;
+            }
+            String rangeHeader = String.format("bytes=%d-%d", start, num + part);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                                                  .uri(url)
                                                  .header("Range", rangeHeader)
                                                  .GET()
                                                  .build();
 
+
             CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
-                    HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("%s%d", name, index))));
+                    HttpResponse.BodyHandlers.ofFile(resolve,StandardOpenOption.CREATE,StandardOpenOption.APPEND));
 
             Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
                                                   .subscribeOn(Schedulers.from(executor))

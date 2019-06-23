@@ -63,7 +63,6 @@ public class Downloader {
             Path downloadFile = basePath.resolve(String.format("%s%d", name, index));
             long bytesDownloaded = downloadFile.toFile()
                                                .length();
-            System.out.println(bytesDownloaded);
             long start = num;
             long end = num + part;
             if (bytesDownloaded > 0) {
@@ -71,7 +70,6 @@ public class Downloader {
             }
             if (start < end) {
                 String rangeHeader = String.format("bytes=%d-%d", start, end);
-                System.out.println(rangeHeader);
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                                                      .uri(url)
                                                      .header("Range", rangeHeader)
@@ -90,8 +88,6 @@ public class Downloader {
                 requests.add(finalRequest);
             }
         }
-
-        System.out.println(requests.size());
 
         Flowable.merge(requests)
                 .blockingSubscribe(res -> {

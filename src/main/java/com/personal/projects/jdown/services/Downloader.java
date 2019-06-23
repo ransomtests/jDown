@@ -60,23 +60,38 @@ public class Downloader {
 
         ExecutorService executor = Executors.newFixedThreadPool(availablePartitions);
         for (long index = 0, num = 0; index < availablePartitions; num = num + part + 1, index++) {
-            String rangeHeader = String.format("bytes=%d-%d", num, num + part);
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                                                 .uri(url)
-                                                 .header("Range", rangeHeader)
-                                                 .GET()
-                                                 .build();
+            Path downloadFile = basePath.resolve(String.format("%s%d", name, index));
+            long bytesDownloaded = downloadFile.toFile()
+                                               .length();
+            System.out.println(bytesDownloaded);
+            long start = num;
+            long end = num + part;
+            if (bytesDownloaded > 0) {
+                start = bytesDownloaded + start;
+            }
+            if (start < end) {
+                String rangeHeader = String.format("bytes=%d-%d", start, end);
+                System.out.println(rangeHeader);
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                                                     .uri(url)
+                                                     .header("Range", rangeHeader)
+                                                     .GET()
+                                                     .build();
 
-            CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
-                    HttpResponse.BodyHandlers.ofFile(basePath.resolve(String.format("%s%d", name, index))));
 
-            Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
-                                                  .subscribeOn(Schedulers.from(executor))
-                                                  .map(HttpResponse::body);
+                CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
+                        HttpResponse.BodyHandlers.ofFile(downloadFile, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
 
-            requests.add(finalRequest);
+                Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
+                                                      .subscribeOn(Schedulers.from(executor))
+                                                      .map(HttpResponse::body);
 
+
+                requests.add(finalRequest);
+            }
         }
+
+        System.out.println(requests.size());
 
         Flowable.merge(requests)
                 .blockingSubscribe(res -> {

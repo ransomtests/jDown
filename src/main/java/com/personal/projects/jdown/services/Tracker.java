@@ -15,29 +15,20 @@ import java.util.stream.Stream;
 public class Tracker {
 
     private static DownloadStatus updateTracker(DownloadStatus downloadStatus) {
-        double percentageDownloaded = ComputationUtils.computePercentageDownloaded(downloadStatus);
-        double timeLeft = ComputationUtils.computeTimeLeft(downloadStatus);
-        String speed = ComputationUtils.computeDownloadSpeed(downloadStatus);
-
-        String downloadString = String.format("completion %f, elapsed %d, left %f , bytes %d, downloadSpeed %s",
-                percentageDownloaded,
-                downloadStatus.getTimeElapsed(),
-                timeLeft, downloadStatus.getBytesDownloaded(), speed);
-
-        downloadStatus.setDownloadString(downloadString);
+        ComputationUtils.computePercentageDownloaded(downloadStatus);
+        ComputationUtils.computeTimeLeft(downloadStatus);
+        ComputationUtils.computeDownloadSpeed(downloadStatus);
 
         return downloadStatus;
     }
 
-    public static Flowable<String> start(long size, Path baseDirectory, String name) {
+    public static Flowable<DownloadStatus> start(long size, Path baseDirectory, String name) {
 
         return Flowable.interval(1, TimeUnit.SECONDS)
                        .subscribeOn(Schedulers.single())
                        .map(timeElapsed -> new DownloadStatus(timeElapsed, Tracker.bytesDownloaded(baseDirectory, name), size))
                        .map(Tracker::updateTracker)
-                       .takeWhile(downloadStatus -> downloadStatus.getPercentageDownloaded() <= 100)
-                       .map(DownloadStatus::getDownloadString);
-
+                       .takeWhile(downloadStatus -> downloadStatus.getPercentageDownloaded() <= 100);
     }
 
     private static long bytesDownloaded(Path baseDirectory, String name) {

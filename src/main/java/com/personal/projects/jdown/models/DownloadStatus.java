@@ -9,7 +9,6 @@ public class DownloadStatus {
     private long timeElapsed;
     private double timeLeft;
     private double percentageDownloaded;
-    private String downloadString;
     private String downloadSpeed;
 
     public DownloadStatus(long timeElapsed, long bytesDownloaded, long fileSize) {
@@ -18,4 +17,11 @@ public class DownloadStatus {
         this.fileSize = fileSize;
     }
 
+    @Override
+    public String toString() {
+        return String.format("completion %f, elapsed %d, left %f , bytes %d, downloadSpeed %s",
+                percentageDownloaded,
+                timeElapsed,
+                timeLeft, bytesDownloaded, downloadSpeed);
+    }
 }

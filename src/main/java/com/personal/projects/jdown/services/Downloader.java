@@ -60,31 +60,38 @@ public class Downloader {
 
         ExecutorService executor = Executors.newFixedThreadPool(availablePartitions);
         for (long index = 0, num = 0; index < availablePartitions; num = num + part + 1, index++) {
-            Path resolve = basePath.resolve(String.format("%s%d", name, index));
-            long alreadyDownloaded = resolve.toFile()
-                                            .length();
+            Path downloadFile = basePath.resolve(String.format("%s%d", name, index));
+            long bytesDownloaded = downloadFile.toFile()
+                                               .length();
+            System.out.println(bytesDownloaded);
             long start = num;
-            if (alreadyDownloaded > 0) {
-                start = alreadyDownloaded;
+            long end = num + part;
+            if (bytesDownloaded > 0) {
+                start = bytesDownloaded + start;
             }
-            String rangeHeader = String.format("bytes=%d-%d", start, num + part);
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                                                 .uri(url)
-                                                 .header("Range", rangeHeader)
-                                                 .GET()
-                                                 .build();
+            if (start < end) {
+                String rangeHeader = String.format("bytes=%d-%d", start, end);
+                System.out.println(rangeHeader);
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                                                     .uri(url)
+                                                     .header("Range", rangeHeader)
+                                                     .GET()
+                                                     .build();
 
 
-            CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
-                    HttpResponse.BodyHandlers.ofFile(resolve,StandardOpenOption.CREATE,StandardOpenOption.APPEND));
+                CompletableFuture<HttpResponse<Path>> futureRequest = httpClient.sendAsync(httpRequest,
+                        HttpResponse.BodyHandlers.ofFile(downloadFile, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
 
-            Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
-                                                  .subscribeOn(Schedulers.from(executor))
-                                                  .map(HttpResponse::body);
+                Flowable<Path> finalRequest = Flowable.fromFuture(futureRequest)
+                                                      .subscribeOn(Schedulers.from(executor))
+                                                      .map(HttpResponse::body);
 
-            requests.add(finalRequest);
 
+                requests.add(finalRequest);
+            }
         }
+
+        System.out.println(requests.size());
 
         Flowable.merge(requests)
                 .blockingSubscribe(res -> {

@@ -7,7 +7,7 @@ Download the source code and build the project using `mvn clean package` once th
 
 `java -jar jDown.jar <URL> <PATH_TO_DOWNLOAD>`
 
-The *PATH_TO_DOWNLOAD* is an optional argument and refers to the directory in which the final downloaded file would be stored.
+The *PATH_TO_DOWNLOAD* is an optional argument and refers to the directory in which the final downloaded file would be stored, if the directory does not exist, the program would attempt to create it.
 
 Depending on the config of your system, the program, on run-time, would decide how many partitions to make of the file you are trying to download. For example, if you have a 4 core CPU with hyper-threading enabled, essentially giving you 8 available cores to work with, the program would split the file into 4 equal parts and then download them in parallel.
 

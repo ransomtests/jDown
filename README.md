@@ -26,7 +26,7 @@ Example:
 
 `java -jar target\jDown.jar http://thesoundeffect.com/music/mp3/GoodTimes.mp3 downloads`
 
-`
+```
 Initializing
 Download started
 completion 0.687837, elapsed 0, left 0.000000 , bytes 54438, downloadSpeed 0.000000 MB/s
@@ -40,6 +40,10 @@ completion 11.050504, elapsed 7, left 56.345527 , bytes 874578, downloadSpeed 0.
 .
 .
 .
+completion 90.112747, elapsed 32, left 3.511069 , bytes 7131858, downloadSpeed 0.212546 MB/s
+completion 92.362072, elapsed 33, left 2.728951 , bytes 7309878, downloadSpeed 0.211250 MB/s
+completion 94.750891, elapsed 34, left 1.883568 , bytes 7498938, downloadSpeed 0.210340 MB/s
+completion 98.586950, elapsed 35, left 0.501656 , bytes 7802538, downloadSpeed 0.212602 MB/s
 Download complete. Merging!
 
 Download Time -> 37363
@@ -48,4 +52,14 @@ calculating checksum
 MD5 -> C8ACD9F92FC4AA732B2F7FF9FFA41D10
 SHA-256 -> 933385417A5846AC81FF945A0443963231CBCE501E5F497787E40FDC3CF0CD77
 
-`
+```
+
+Explanation of the output:
+
+    1: completion : percentage completion of the download
+    2: elapsed : time elapsed in seconds
+    3: left : time left in seconds
+    4: bytes: number of bytes downloaded
+    5: downloadSpeed: estimated download speed in MegaBytes per second
+    6: Download Time: time taken to fully download the file, in milli-seconds
+    

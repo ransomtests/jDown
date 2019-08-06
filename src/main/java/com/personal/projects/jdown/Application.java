@@ -11,11 +11,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 public class Application {
-    public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         Map<String, String> parsedArguments = CommandLineParser.parse(args);
         String url = parsedArguments.get("url");
@@ -61,7 +60,7 @@ public class Application {
                                           .map(res -> String.format("SHA-256 -> %S", res));
 
         Flowable.zip(md5, sha256, (m, s) -> String.format("%s\n%s", m, s))
-                .blockingSubscribe(System.out::println,System.out::println);
+                .blockingSubscribe(System.out::println, System.out::println);
 
     }
 
